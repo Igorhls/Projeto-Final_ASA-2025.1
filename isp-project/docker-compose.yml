@@ -1,0 +1,86 @@
+services:
+  haproxy:
+    build: ./haproxy
+    container_name: haproxy
+    ports:
+      - "80:80"
+      - "443:443"
+      - "25:25"
+      - "587:587"
+      - "993:993"
+    volumes:
+      - ./haproxy/certbot/conf:/certs
+    depends_on:
+      - portal
+      - roundcube
+      - postfix
+      - dovecot
+    networks:
+      - isp-net
+
+  certbot:
+    image: certbot/certbot
+    container_name: certbot
+    volumes:
+      - ./haproxy/certbot/conf:/etc/letsencrypt
+      - ./haproxy/certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email seu-email@dominio.com --agree-tos --no-eff-email -d portal.asa.br -d webmail.asa.br -d mail.asa.br
+    networks:
+      - isp-net
+
+  dns:
+    build: ./dns
+    container_name: dns
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    networks:
+      - isp-net
+
+  portal:
+    image: nginx:alpine
+    container_name: portal
+    volumes:
+      - ./portal:/usr/share/nginx/html
+    networks:
+      - isp-net
+
+  postfix:
+    build: ./email/postfix
+    container_name: postfix
+    hostname: mail.asa.br
+    networks:
+      - isp-net
+
+  dovecot:
+    build: ./email/dovecot
+    container_name: dovecot
+    restart: always
+    networks:
+      - isp-net
+
+  roundcube:
+    image: roundcube/roundcubemail
+    container_name: webmail
+    environment:
+      - ROUNDCUBE_DEFAULT_HOST=dovecot
+      - ROUNDCUBE_SMTP_SERVER=postfix
+    depends_on:
+      - dovecot
+      - postfix
+    ports:
+      - "8080:80"
+    volumes:
+      - ./config.inc.php:/var/www/html/config/config.inc.php
+    networks:
+      - isp-net
+
+volumes:
+  maildata:
+
+networks:
+  isp-net:
+    driver: bridge
+
+
+

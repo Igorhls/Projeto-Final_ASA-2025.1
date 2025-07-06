@@ -1,0 +1,14 @@
+FROM debian:bullseye
+
+RUN apt update && \
+    apt install -y bind9 bind9utils dnsutils && \
+    mkdir -p /etc/bind/zones
+
+COPY named.conf.local /etc/bind/named.conf.local
+COPY zones/db.asa.br /etc/bind/db.asa.br
+
+EXPOSE 53/udp
+EXPOSE 53/tcp
+
+CMD ["/usr/sbin/named", "-g", "-c", "/etc/bind/named.conf"]
+
