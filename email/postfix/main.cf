@@ -1,0 +1,29 @@
+myhostname = mail.asa.br
+mydomain = asa.br
+myorigin = $mydomain
+inet_interfaces = all
+inet_protocols = ipv4
+mydestination = $myhostname, localhost.$mydomain, localhost
+home_mailbox = Maildir/
+smtpd_banner = $myhostname ESMTP $mail_name
+
+# TLS para testes
+smtpd_use_tls = no
+
+# Autenticação com dovecot
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+smtpd_recipient_restrictions =
+    permit_sasl_authenticated,
+    permit_mynetworks,
+    reject_unauth_destination
+
+# Usuários virtuais
+virtual_mailbox_domains = asa.br
+virtual_mailbox_base = /mail
+virtual_mailbox_maps = hash:/etc/postfix/vmailbox
+virtual_minimum_uid = 5000
+virtual_uid_maps = static:5000
+virtual_gid_maps = static:5000
+

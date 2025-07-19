@@ -1,0 +1,126 @@
+services:
+  reverse-proxy:
+    image: nginx:latest
+    container_name: cliente1-proxy
+    platform: linux/arm64/v8
+    volumes:
+      - ./reverse-proxy/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - portal
+      - sign-app
+      - hotsite
+    restart: always
+    networks:
+      - cliente1-network
+
+  db:
+    image: mysql:8.0
+    container_name: cliente1-db
+    environment:
+      MYSQL_DATABASE: example
+      MYSQL_USER: example
+      MYSQL_PASSWORD: example
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - cliente1-network
+
+  portal:
+    image: wordpress:latest
+    container_name: cliente1-portal
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: example
+      WORDPRESS_DB_PASSWORD: example
+      WORDPRESS_DB_NAME: example
+    volumes:
+      - portal_data:/var/www/html
+    ports:
+      - "8085:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    networks:
+      - cliente1-network
+
+  hotsite:
+    build:
+      context: ./hotsite
+    container_name: cliente1-hotsite
+    expose:
+      - "80"
+    restart: always
+    networks:
+      - cliente1-network
+
+  sign-db:
+    image: postgres:15-alpine
+    container_name: sign-db
+    environment:
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: dbuserpass123
+      POSTGRES_DB: docsign_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dbuser -d docsign_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cliente1-network
+
+  sign-api:
+    image: salesfilho/sign-api:latest
+    container_name: sign-api
+    environment:
+      DB_HOST: sign-db
+      DB_PORT: 5432
+      DB_USER: dbuser
+      DB_PASSWORD: dbuserpass123
+      DB_NAME: docsign_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      sign-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cliente1-network
+
+  sign-app:
+    image: salesfilho/sign-app:latest
+    container_name: sign-app
+    platform: linux/arm64/v8
+    environment:
+      API_BASE_URL: http://sign-api:8000/api
+    ports:
+      - "8081:80"
+    depends_on:
+      sign-api:
+        condition: service_healthy
+    networks:
+      - cliente1-network
+
+volumes:
+  db_data:
+  portal_data:
+  postgres_data:
+
+networks:
+  cliente1-network:
+    driver: bridge
