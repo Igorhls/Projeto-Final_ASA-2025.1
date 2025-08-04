@@ -12,4 +12,5 @@ dns     IN      A       192.168.1.73
 portal  IN      A       192.168.1.73
 mail    IN      A       192.168.1.73
 webmail IN      A       192.168.1.73
+@        IN  MX  10  mail.asa.br.
 
