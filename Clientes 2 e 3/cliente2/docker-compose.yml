@@ -1,0 +1,73 @@
+services:
+  reverse-proxy:
+    image: nginx:latest
+    container_name: cliente2-proxy
+    platform: linux/arm64/v8
+    volumes:
+      - ./reverse-proxy/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - "80:80"
+    depends_on:
+      - portal
+      - static-portal
+    restart: always
+    networks:
+      - cliente2-network
+
+  db:
+    image: mysql:8.0
+    container_name: cliente2-db
+    environment:
+      MYSQL_DATABASE: example
+      MYSQL_USER: example
+      MYSQL_PASSWORD: example
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    networks:
+      - cliente2-network
+
+  portal:
+    image: wordpress:latest
+    container_name: cliente2-portal
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: example
+      WORDPRESS_DB_PASSWORD: example
+      WORDPRESS_DB_NAME: example
+    volumes:
+      - portal_data:/var/www/html
+    ports:
+      - "8085:80"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+    networks:
+      - cliente2-network
+
+  static-portal:
+    build:
+      context: ./static-portal
+    container_name: cliente2-static-portal
+    expose:
+      - "80"
+    restart: always
+    networks:
+      - cliente2-network
+
+volumes:
+  db_data:
+  portal_data:
+
+networks:
+  cliente2-network:
+    driver: bridge
+
+
