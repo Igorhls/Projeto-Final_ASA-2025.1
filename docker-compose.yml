@@ -67,6 +67,8 @@ services:
     volumes:
       - maildata:/var/mail
       - ./email/dovecot/dovecot.conf:/etc/dovecot/dovecot.conf:ro
+      # LINHA ADICIONADA PARA CORRIGIR A AUTENTICAÇÃO
+      - ./email/dovecot/conf.d/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
     networks:
       - isp-net
 
