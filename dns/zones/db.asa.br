@@ -7,9 +7,11 @@ $TTL    604800
                          604800 )       ; Negative Cache TTL
 
 @       IN      NS      ns1.asa.br.
-@       IN      A       127.0.0.1
-ns1     IN      A       127.0.0.1
+@       IN      A       192.168.1.73
+ns1     IN      A       192.168.1.73
 
-portal  IN      A       127.0.0.1
-webmail IN      A       127.0.0.1
-mail    IN      A       127.0.0.1
+portal  IN      A       192.168.1.73
+webmail IN      A       192.168.1.73
+mail    IN      A       192.168.1.73
+
+@        IN  MX  10  mail.asa.br.

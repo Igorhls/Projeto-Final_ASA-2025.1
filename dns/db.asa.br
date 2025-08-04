@@ -8,8 +8,8 @@ $TTL    604800
 
         IN      NS      dns.asa.br.
 
-dns     IN      A       10.0.2.15
-portal  IN      A       10.0.2.15
-mail    IN      A       10.0.2.15
-webmail IN      A       10.0.2.15
+dns     IN      A       192.168.1.73
+portal  IN      A       192.168.1.73
+mail    IN      A       192.168.1.73
+webmail IN      A       192.168.1.73
 
