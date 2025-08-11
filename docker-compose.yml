@@ -1,3 +1,5 @@
+# Caminho: ./docker-compose.yml
+
 version: "3.8"
 
 services:
@@ -7,11 +9,13 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "25:25"     # SMTP
-      - "587:587"   # SMTP AUTH
-      - "993:993"   # IMAPS
+      - "25:25"
+      - "587:587"
+      - "993:993"
     volumes:
-      - ./haproxy/certbot/conf:/certs
+      # Garanta que o caminho para o seu haproxy.cfg esteja correto
+      - ./haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./haproxy/certbot/conf:/etc/letsencrypt
     depends_on:
       - portal
       - roundcube
@@ -51,8 +55,6 @@ services:
     build: ./email/postfix
     container_name: postfix
     hostname: mail.asa.br
-    environment:
-      - MAILNAME=mail.asa.br
     volumes:
       - maildata:/var/mail
       - ./email/postfix/main.cf:/etc/postfix/main.cf:ro
@@ -67,7 +69,6 @@ services:
     volumes:
       - maildata:/var/mail
       - ./email/dovecot/dovecot.conf:/etc/dovecot/dovecot.conf:ro
-      # LINHA ADICIONADA PARA CORRIGIR A AUTENTICAÇÃO
       - ./email/dovecot/conf.d/10-auth.conf:/etc/dovecot/conf.d/10-auth.conf:ro
     networks:
       - isp-net
@@ -82,8 +83,7 @@ services:
     depends_on:
       - dovecot
       - postfix
-    ports:
-      - "8080:80"
+    # A porta foi REMOVIDA daqui, pois o HAProxy gerencia o acesso
     volumes:
       - ./config.inc.php:/var/www/html/config/config.inc.php
     networks:
@@ -94,4 +94,4 @@ volumes:
 
 networks:
   isp-net:
-    driver: bridge
+    external: true
