@@ -11,13 +11,13 @@ $TTL    604800
 dns     IN      A       192.168.1.73
 
 ; --- Registros do Domínio e Serviços do ISP ---
-@       IN      A       192.168.1.73         
-portal  IN      A       192.168.1.73
-mail    IN      A       192.168.1.73
-webmail IN      A       192.168.1.73
+@       IN      A       10.24.12.75     
+portal  IN      A       10.24.12.75
+mail    IN      A       10.24.12.75
+webmail IN      A       10.24.12.75
 @       IN      MX  10  mail.asa.br.
 
 ; --- Registros dos Clientes ---
-cliente1 IN     A       192.168.1.73
-cliente2 IN     A       192.168.1.73
-cliente3 IN     A       192.168.1.73
+cliente1 IN     A       10.24.12.75
+cliente2 IN     A       10.24.12.75
+cliente3 IN     A       10.24.12.75
